@@ -1,21 +1,20 @@
-const ingredientsDal = require('../dal/ingredients-dal');
-const validator = require('./validator');
-const AppError = require('../error/AppError');
-const errorType = require('../consts/ErrorTypes');
+import ingredientsDal from '../dal/ingredients-dal.js';
+import validator from './validator.js';
+import AppError from '../error/AppError.js';
+import ErrorTypes from '../consts/ErrorTypes.js';
 
 const addIngredient = async (ingredient) => {
-    // add userId to the ingredient
-    //add to db as well
-    const { error, value } = validator.validateIngredients(ingredient);
+    const {error, value} = validator.validateIngredients(ingredient);
     if (error) {
-        throw new AppError(errorType.VALIDATION_ERROR, error.message, 400, error.code, true);
+        throw new AppError(ErrorTypes.VALIDATION_ERROR, error.message, 400, error.code, true);
     }
-    await ingredientsDal.addIngredient(ingredient);
+    await ingredientsDal.addIngredient(value);
 };
+
 const getAllIngredients = async () => {
     const ingredients = await ingredientsDal.getAllIngredients();
     if (!ingredients) {
-        throw new AppError(errorType.NO_INGREDIENTS_FOUND, "no ingredients found", 404, "no ingredients found", true);
+        throw new AppError(ErrorTypes.NO_INGREDIENTS_FOUND, "no ingredients found", 404, "no ingredients found", true);
     }
     return ingredients;
 };
@@ -23,19 +22,17 @@ const getAllIngredients = async () => {
 const getIngredient = async (ingredientId) => {
     const ingredient = await ingredientsDal.getIngredient(ingredientId);
     if (!ingredient) {
-        throw new AppError(errorType.NO_INGREDIENTS_FOUND, "ingredient not found", 404, "ingredient not found", true);
+        throw new AppError(ErrorTypes.NO_INGREDIENTS_FOUND, "ingredient not found", 404, "ingredient not found", true);
     }
     return ingredient;
 };
 
 const updateIngredient = async (ingredient) => {
-    // await getIngredient(ingredient.id);
-    //check if the creator is the one updating?
-    const { error, value } = validator.validateIngredients(ingredient);
+    const {error,value} = validator.validateIngredients(ingredient);
     if (error) {
-        throw new AppError(errorType.VALIDATION_ERROR, error.message, 400, error.code, true);
+        throw new AppError(ErrorTypes.VALIDATION_ERROR, error.message, 400, error.code, true);
     }
-    await ingredientsDal.updateIngredient(ingredient);
+    await ingredientsDal.updateIngredient(value);
 };
 
 const deleteIngredient = async (ingredientId) => {
@@ -61,31 +58,34 @@ const getAllIngredientsForRecipes = async (recipeIds) => {
 
 
 const addIngredientsFromRecipe = async (ingredients, connection) => {
+    let values = [];
     ingredients.forEach(ingredient => {
         const { error, value } = validator.validateIngredients(ingredient);
+        values.push(value);
         if (error) {
-            throw new AppError(errorType.VALIDATION_ERROR, error.message, 400, error.code, true);
+            throw new AppError(ErrorTypes.VALIDATION_ERROR, error.message, 400, error.code, true);
+
         }
     });
     try {
-        let existingIngredients = await ingredientsDal.checkIfIngredientsExist(ingredients, connection); // Pass connection
+        let existingIngredients = await ingredientsDal.checkIfIngredientsExist(values, connection); 
         const existingIngredientNames = existingIngredients.map(ingredient => ingredient.name);
-        const newIngredients = ingredients.filter(ingredient =>
+        const newIngredients = values.filter(ingredient =>
             !existingIngredientNames.map(name => name.toLowerCase()).includes(ingredient.name.toLowerCase())
         );
 
         if (newIngredients.length > 0) {
-            let addedIngredients = await ingredientsDal.addIngredientsFromRecipe(newIngredients, connection); // Pass connection
+            let addedIngredients = await ingredientsDal.addIngredientsFromRecipe(newIngredients, connection); 
             existingIngredients.push(...addedIngredients);
         }
         return existingIngredients;
     } catch (error) {
-        throw error; // Rethrow or handle the error accordingly
+        throw new AppError(ErrorTypes.INVALID_INGREDIENT, error.message, 400, true);
     }
 };
 
 
-module.exports = {
+export default {
     addIngredient,
     getAllIngredients,
     getIngredient,

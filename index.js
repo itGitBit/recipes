@@ -1,16 +1,17 @@
-require('dotenv').config();
-const express = require('express');
-const errorHandler = require('./error/ErrorHandler');
-const jwt = require('jsonwebtoken');
+import dotenv from 'dotenv';
+dotenv.config();
+import express, { json } from 'express';
+import errorHandler from './error/ErrorHandler.js';
+import verify from 'jsonwebtoken';
 const server = express();
-const cors = require('cors');
-const usersController = require('./controllers/users-controller');
-const ingredientsController = require('./controllers/ingredients-controller');
-const likesController = require('./controllers/likes-controller');
-const commentsController = require('./controllers/comments-controller');
-const recipesController = require('./controllers/recipes-controller');
-const tagsController = require('./controllers/tags-controller');
-const { calculateCurrentTime } = require('./utils/calculate-time');
+import cors from 'cors';
+import usersController from './controllers/users-controller.js';
+import ingredientsController from './controllers/ingredients-controller.js';
+import likesController from './controllers/likes-controller.js';
+import commentsController from './controllers/comments-controller.js';
+import recipesController from './controllers/recipes-controller.js';
+import tagsController from './controllers/tags-controller.js';
+import  calculateCurrentTime from './utils/calculate-time.js';
 
 
 
@@ -24,7 +25,7 @@ const authenticateToken = (request, response, next) => {
     const authHeader = request.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
     if (token == null) return response.sendStatus(401);
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (error, user) => {
+    verify(token, process.env.ACCESS_TOKEN_SECRET, (error, user) => {
         if (error) return response.sendStatus(403).json({ message: 'invalid token' });
         request.user = user;
         next();
@@ -32,7 +33,7 @@ const authenticateToken = (request, response, next) => {
 };
 
 server.use(cors({ origin: 'http://localhost:3000' }));
-server.use(express.json());
+server.use(json());
 // server.use(authenticateToken);
 
 server.use('/users', usersController);

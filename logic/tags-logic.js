@@ -1,22 +1,21 @@
-const validateTags = require("./validator");
-const tagsDal = require("../dal/tags-dal");
-const AppError = require("../error/AppError");
-const errorType = require("../consts/ErrorTypes");
-const e = require("cors");
+import validateTags from "./validator.js";
+import tagsDal from "../dal/tags-dal.js";
+import AppError from "../error/AppError.js";
+import ErrorTypes from "../consts/ErrorTypes.js";
 
 
 const addTag = async (tag) => {
     const { error, value } = validateTags.validateTags(tag);
     if (error) {
-        throw new AppError(errorType.VALIDATION_ERROR, error.message, 400, error.code, true);
+        throw new AppError(ErrorTypes.VALIDATION_ERROR, error.message, 400, error.code, true);
     }
-    await tagsDal.addTag(tag);
+    await tagsDal.addTag(value);
 };
 
 const getAllTags = async () => {
     const tags = await tagsDal.getAllTags();
     if (!tags) {
-        throw new AppError(errorType.NO_TAGS_FOUND, "no tags found", 404, "no tags found", true);
+        throw new AppError(ErrorTypes.NO_TAGS_FOUND, "no tags found", 404, "no tags found", true);
     }
     return tags;
 };
@@ -24,7 +23,7 @@ const getAllTags = async () => {
 const getTag = async (tagId) => {
     const tag = await tagsDal.getTag(tagId);
     if (!tag) {
-        throw new AppError(errorType.NO_TAGS_FOUND, "no tags found", 404, "no tags found", true);
+        throw new AppError(ErrorTypes.NO_TAGS_FOUND, "no tags found", 404, "no tags found", true);
     }
     return tag;
 }
@@ -50,7 +49,7 @@ const getAllTagsForRecipes = async (recipeIds) => {
 const updateTag = async (tag) => {
     const { error, value } = validateTags.validateTags(tag);
     if (error) {
-        throw new AppError(errorType.VALIDATION_ERROR, error.message, 400, error.code, true);
+        throw new AppError(ErrorTypes.VALIDATION_ERROR, error.message, 400, error.code, true);
     }
     await tagsDal.updateTag(tag);
 };
@@ -60,13 +59,15 @@ const deleteTag = async (tagId) => {
 };
 
 const addTagsFromRecipe = async (tags, connection) => {
+    let values = [];
     tags.forEach(tag => {
         const { error, value } = validateTags.validateTags(tag);
+        values.push(value);
         if (error) {
-            throw new AppError(errorType.VALIDATION_ERROR, error.message, 400, error.code, true);
+            throw new AppError(ErrorTypes.VALIDATION_ERROR, error.message, 400, error.code, true);
         }
     });
-    const existingTags = await tagsDal.checkIfTagsExist(tags, connection);
+    const existingTags = await tagsDal.checkIfTagsExist(values, connection);
     const existingTagsNames = existingTags.map(tag => tag.name);
     const newTagsList = tags.filter(tag => !existingTagsNames.includes(tag.name));
     console.log(`tags-logic: newTagsList: ${JSON.stringify(newTagsList)}`);
@@ -78,7 +79,7 @@ const addTagsFromRecipe = async (tags, connection) => {
     return existingTags;
 }
 
-module.exports = {
+export default {
     addTag,
     getAllTags,
     getTag,

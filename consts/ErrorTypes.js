@@ -1,11 +1,11 @@
 const ErrorTypes = {
-    INVALID_USER: 400,
-    INVALID_PASSWORD: 404,
-    INVALID_EMAIL: 404,
+    INVALID_USER: 401,
+    INVALID_PASSWORD: 401,
+    INVALID_EMAIL: 401,
     INVALID_TOKEN: 401,
-    NO_USERS_FOUND: 404,
+    NO_USERS_FOUND: 401,
     DB_ERROR:500,
-    VALIDATION_ERROR: 400,
+    VALIDATION_ERROR: 403,
     NO_INGREDIENTS_FOUND: 404,
     NO_RECIPES_FOUND: 404,
     NO_COMMENTS_FOUND: 404,
@@ -14,8 +14,7 @@ const ErrorTypes = {
     NO_LIKES_FOUND: 404,
     RECIPE_ADD_FAILED: 500,
     DOUBLE_LIKE: 400,
-    
-// change codes because it's confusing with http codes
+    INVALID_INGREDIENT:500
 };
 
-module.exports = ErrorTypes;
+export default ErrorTypes;

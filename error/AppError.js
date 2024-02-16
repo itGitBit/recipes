@@ -6,4 +6,4 @@ class AppError extends Error {
     this.isOperational = isOperational;
   }
 }
-module.exports = AppError;
+export default AppError;

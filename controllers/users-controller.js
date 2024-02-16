@@ -1,9 +1,7 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const usersLogic = require('../logic/users-logic');
-const { tryCatch } = require('../utils/trycatch');
-const AppError = require('../error/AppError');
-const server = express();
+import usersLogic from '../logic/users-logic.js';
+import { tryCatch } from '../utils/trycatch.js';
 
 
 router.post('/', tryCatch(async (request, response) => {
@@ -57,5 +55,5 @@ router.delete('/:userId', tryCatch(async (request, response) => {
     response.status(200).json({ message: 'User deleted successfully' });
 }));
 
-module.exports = router;
+export default router;
 

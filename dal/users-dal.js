@@ -1,6 +1,6 @@
-const { DB_ERROR, INVALID_USER } = require("../consts/ErrorTypes");
-const AppError = require("../error/AppError");
-const connectionWrapper = require("./connection-wrapper");
+import ErrorTypes from "../consts/ErrorTypes.js";
+import AppError from "../error/AppError.js";
+import connectionWrapper from "./connection-wrapper.js";
 
 
 const addUser = async (user) => {
@@ -10,10 +10,10 @@ const addUser = async (user) => {
         await connectionWrapper.executeWithParameters(sql, parameters);
     } catch (error) {
         if (error.code === "ER_DUP_ENTRY") {
-            throw new AppError(errorType.VALIDATION_ERROR, "User already exists", 400, error.code, true);
+            throw new AppError(ErrorTypes.VALIDATION_ERROR, "User already exists", 400, error.code, true);
         }
         console.log(error.message);
-        throw new AppError(DB_ERROR, "Failed to add user to database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to add user to database", 500, false);
     }
 }
 
@@ -26,7 +26,7 @@ const getUser = async (userId) => {
         user = await connectionWrapper.executeWithParameters(sql, parameters);
         if (!user) {
 
-            throw new AppError(errorType.INVALID_USER, "user not found", 404, true);
+            throw new AppError(ErrorTypes.INVALID_USER, "user not found", 404, true);
         }
 
     }
@@ -37,7 +37,7 @@ const getUser = async (userId) => {
         }
 
         console.log(error.message);
-        throw new AppError(errorType.DB_ERROR, "Failed to get user from database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to get user from database", 500, false);
     }
     return user;
 
@@ -48,14 +48,14 @@ const getAllUsers = async () => {
     try {
         let userList = await connection.execute(sql);
         if (!userList) {
-            throw new AppError(errorType.INVALID_USER, "no user found in database", 404, true);
+            throw new AppError(ErrorTypes.INVALID_USER, "no user found in database", 404, true);
         }
     } catch (error) {
         if (error instanceof AppError) {
             throw error;
         }
         console.log(error.message);
-        throw new AppError(errorType.DB_ERROR, "Failed to get users from database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to get users from database", 500, false);
     }
     return userList;
 }
@@ -67,7 +67,7 @@ const isUserExist = async (email) => {
         let user = await connectionWrapper.executeWithParameters(sql, parameters);
         if (user[0] != null) {
             console.log("user already exists", user);
-            throw new AppError(errorType.INVALID_USER, "user already exists", 404, true);
+            throw new AppError(ErrorTypes.INVALID_USER, "user already exists", 404, true);
         }
     }
     catch (error) {
@@ -75,7 +75,7 @@ const isUserExist = async (email) => {
             throw error;
         }
         console.log(error.message);
-        throw new AppError(errorType.DB_ERROR, "Failed to get user from database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to get user from database", 500, false);
 
     }
 }
@@ -95,7 +95,7 @@ const getUserByEmail = async (email, password) => {
             throw error;
         }
         console.log(error.message);
-        throw new AppError(DB_ERROR, "Failed to get user from database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to get user from database", 500, false);
     }
 
     return user;
@@ -103,7 +103,7 @@ const getUserByEmail = async (email, password) => {
 
 
 
-module.exports = {
+export default {
     addUser,
     getUser,
     getAllUsers,

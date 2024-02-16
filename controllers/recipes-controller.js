@@ -1,8 +1,7 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const recipesLogic = require('../logic/recipes-logic');
-const { tryCatch } = require('../utils/trycatch');
-const AppError = require('../error/AppError');
+import recipesLogic from '../logic/recipes-logic.js';
+import { tryCatch } from '../utils/trycatch.js';
 
 router.post('/', tryCatch(async (request, response) => {
     let recipe = request.body;
@@ -57,4 +56,4 @@ router.delete('/:recipeId', tryCatch(async (request, response) => {
     response.status(200).json({ message: 'Recipe deleted successfully' });
 }));
 
-module.exports = router;
+export default router;

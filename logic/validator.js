@@ -1,6 +1,8 @@
+import Joi from 'joi';
+
+
 const validator = (schema) => (payload) =>
-schema.validate(payload, { abortEarly: false });
-const Joi = require('joi');
+    schema.validate(payload, { abortEarly: false });
 
 
 const signupSchema = Joi.object({
@@ -9,7 +11,8 @@ const signupSchema = Joi.object({
     email: Joi.string().email().required(),
     type: Joi.string().valid('admin', 'user').required(),
     profileImage: Joi.string().max(400),
-    active: Joi.boolean.valid(true)
+    active: Joi.boolean().valid(true)
+
 });
 
 const loginSchema = Joi.object({
@@ -69,7 +72,7 @@ const validateTags = validator(tagsSchema);
 
 
 
-module.exports = {
+export default {
     validateSignup,
     validateLogin,
     validateIngredients,

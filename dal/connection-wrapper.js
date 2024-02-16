@@ -1,7 +1,7 @@
-const mysql = require('mysql2/promise');
+import { createPool } from 'mysql2/promise';
 
 // Create a connection pool
-const pool = mysql.createPool({
+const pool = createPool({
     host: 'localhost',
     user: 'root',
     password: '1234',
@@ -50,7 +50,7 @@ async function execute(sql, connection = pool) {
 }
 
 
-module.exports = {
+export default {
     executeWithParameters,
     beginTransaction,
     commitTransaction,

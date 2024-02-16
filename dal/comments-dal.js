@@ -1,7 +1,7 @@
-const connectionWrapper = require('./connection-wrapper');
-const AppError = require('../error/AppError');
-const errorType = require('../consts/ErrorTypes');
-const { calculateCurrentTime } = require('../utils/calculate-time');
+import connectionWrapper from './connection-wrapper.js';
+import AppError from '../error/AppError.js';
+import ErrorTypes from '../consts/ErrorTypes.js';
+import calculateCurrentTime from '../utils/calculate-time.js';
 
 
 
@@ -12,7 +12,7 @@ const addComment = async (comment) => {
         await connectionWrapper.executeWithParameters(sql, parameters);
     } catch (error) {
         console.log(`${calculateCurrentTime()} -CommentsDal.addComment ${error.message}`);
-        throw new AppError(errorType.DB_ERROR, "Failed to add comment to database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to add comment to database", 500, false);
     }
 }
 
@@ -23,7 +23,7 @@ const getAllComments = async () => {
         return comments;
     } catch (error) {
         console.log(`${calculateCurrentTime()} -CommentsDal.getAllComments ${error.message}`);
-        throw new AppError(errorType.DB_ERROR, "Failed to get comments from database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to get comments from database", 500, false);
     }
 }
 
@@ -35,7 +35,7 @@ const getComment = async (commentId) => {
         return comment;
     } catch (error) {
         console.log(`${calculateCurrentTime()} -CommentsDal.getComment ${error.message}`);
-        throw new AppError(errorType.DB_ERROR, "Failed to get comment from database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to get comment from database", 500, false);
     }
 }
 
@@ -47,7 +47,7 @@ const getAllCommentsByRecipeId = async (recipeId) => {
         return comments;
     } catch (error) {
         console.log(`${calculateCurrentTime()} -CommentsDal.getAllCommentsByRecipeId ${error.message}`);
-        throw new AppError(errorType.DB_ERROR, "Failed to get comments from database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to get comments from database", 500, false);
     }
 }
 
@@ -58,7 +58,7 @@ const getAllCommentsByUserId = async (userId) => {
         let comments = await connectionWrapper.executeWithParameters(sql, parameters);
         return comments;
     } catch (error) {
-        throw new AppError(errorType.DB_ERROR, "Failed to get comments from database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to get comments from database", 500, false);
     }
 }
 
@@ -68,7 +68,7 @@ const updateComment = async (comment) => {
     try {
         await connectionWrapper.executeWithParameters(sql, parameters);
     } catch (error) {
-        throw new AppError(errorType.DB_ERROR, "Failed to update comment in database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to update comment in database", 500, false);
     }
 }
 
@@ -78,10 +78,10 @@ const deleteComment = async (commentId) => {
     try {
         await connectionWrapper.executeWithParameters(sql, parameters);
     } catch (error) {
-        throw new AppError(errorType.DB_ERROR, "Failed to delete comment from database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to delete comment from database", 500, false);
     }
 }
-module.exports = {
+export default {
     addComment,
     getAllComments,
     getComment,

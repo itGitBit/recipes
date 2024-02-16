@@ -1,13 +1,13 @@
-const AppError = require('./AppError');
-const errorType = require('../consts/ErrorTypes.js');
+import AppError from './AppError.js';
+import ErrorTypes from '../consts/ErrorTypes.js';
 
 
-const errorHandler = (err, req, res, next) => {
+const ErrorHandler = (err, req, res, next) => {
 
 
     if (err instanceof AppError) {
 
-        if (err.errorType == errorType.VALIDATION_ERROR) {
+        if (err.errorType == ErrorTypes.VALIDATION_ERROR) {
             return res.status(400).send({
                 errorCode: err.errorType,
                 details: err.message,
@@ -24,6 +24,4 @@ const errorHandler = (err, req, res, next) => {
 
 };
 
-
-
-module.exports = errorHandler;
+export default ErrorHandler;

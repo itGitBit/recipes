@@ -1,8 +1,9 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const tagsLogic = require('../logic/tags-logic');
-const { tryCatch } = require('../utils/trycatch');
-const AppError = require('../error/AppError');
+import tagsLogic from '../logic/tags-logic.js';
+import { tryCatch } from '../utils/trycatch.js';
+
+
 
 router.post('/', tryCatch(async (request, response) => {
     let tag = request.body;
@@ -41,4 +42,4 @@ router.delete('/:tagId', tryCatch(async (request, response) => {
     response.status(200).json({ message: 'Tag deleted successfully' });
 }));
 
-module.exports = router;
+export default router;

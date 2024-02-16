@@ -1,7 +1,7 @@
-const connectionWrapper = require('./connection-wrapper');
-const AppError = require('../error/AppError');
-const errorType = require('../consts/ErrorTypes');
-const { calculateCurrentTime } = require('../utils/calculate-time');
+import connectionWrapper from './connection-wrapper.js';
+import AppError from '../error/AppError.js';
+import ErrorTypes from '../consts/ErrorTypes.js';
+import calculateCurrentTime from '../utils/calculate-time.js';
 
 
 const addLike = async (like, connection) => {
@@ -11,10 +11,10 @@ const addLike = async (like, connection) => {
         let row = await connectionWrapper.executeWithParameters(sql, parameters,connection);
     } catch (error) {
         if (error.code === "ER_DUP_ENTRY") {
-            throw new AppError(errorType.DOUBLE_LIKE, "Like already exists", 400, error.code, true);
+            throw new AppError(ErrorTypes.DOUBLE_LIKE, "Like already exists", 400, error.code, true);
         }
         console.log(`${calculateCurrentTime()} - ${error.message}`);
-        throw new AppError(errorType.DB_ERROR, "Failed to add like to database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to add like to database", 500, false);
     }
 }
 
@@ -26,7 +26,7 @@ const getAllLikes = async () => {
         return likes;
     } catch (error) {
         console.log(`${calculateCurrentTime()} - ${error.message}`);
-        throw new AppError(errorType.DB_ERROR, "Failed to get likes from database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to get likes from database", 500, false);
     }
 }
 const getAllLikesByRecipeId = async (recipeId) => {
@@ -37,7 +37,7 @@ const getAllLikesByRecipeId = async (recipeId) => {
         return likes;
     } catch (error) {
         console.log(`${calculateCurrentTime()} - ${error.message}`);
-        throw new AppError(errorType.DB_ERROR, "Failed to get likes from database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to get likes from database", 500, false);
     }
 }
 
@@ -49,7 +49,7 @@ const getAllLikesByUserId = async (userId) => {
         return likes;
     } catch (error) {
         console.log(`${calculateCurrentTime()} - ${error.message}`);
-        throw new AppError(errorType.DB_ERROR, "Failed to get likes from database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to get likes from database", 500, false);
     }
 }
 
@@ -59,11 +59,11 @@ const deleteLike = async (userId, recipeId, connection) => {
     try {
         let deletedLikes = await connectionWrapper.executeWithParameters(sql, parameters, connection);
         if (deletedLikes.affectedRows === 0) {
-            throw new AppError(errorType.DB_ERROR, "failed to delete any likes", 404, true);
+            throw new AppError(ErrorTypes.DB_ERROR, "failed to delete any likes", 404, true);
         }
     } catch (error) {
         console.log(`${calculateCurrentTime()} - ${error.message}`);
-        throw new AppError(errorType.DB_ERROR, "Failed to delete like from database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to delete like from database", 500, false);
     }
 }
 
@@ -73,11 +73,11 @@ const deleteLikesByRecipeId = async (recipeId, connection) => {
     try {
         let deletedItems = await connectionWrapper.executeWithParameters(sql, parameters, connection);
         if (deletedItems.affectedRows === 0) {
-            throw new AppError(errorType.DB_ERROR, "failed to delete any likes", 404, true);
+            throw new AppError(ErrorTypes.DB_ERROR, "failed to delete any likes", 404, true);
         }
     } catch (error) {
         console.log(`${calculateCurrentTime()} - ${error.message}`);
-        throw new AppError(errorType.DB_ERROR, "Failed to delete likes from database", 500, false);
+        throw new AppError(DB_ERROR, "Failed to delete likes from database", 500, false);
     }
 }
 
@@ -87,16 +87,16 @@ const toggleLikeOff = async (recipeId, userId) =>{
     try {
         let deletedLikes = await connectionWrapper.executeWithParameters(sql, parameters);
         if (deletedLikes.affectedRows === 0) {
-            throw new AppError(errorType.DB_ERROR, "failed to delete any likes", 404, true);
+            throw new AppError(ErrorTypes.DB_ERROR, "failed to delete any likes", 404, true);
         }
     } catch (error) {
         console.log(`${calculateCurrentTime()} - ${error.message}`);
-        throw new AppError(errorType.DB_ERROR, "Failed to delete like from database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to delete like from database", 500, false);
     }
 }
 
 
-module.exports = {
+export default {
     addLike,
     getAllLikes,
     getAllLikesByRecipeId,

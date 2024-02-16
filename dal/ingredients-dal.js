@@ -1,7 +1,7 @@
-const connectionWrapper = require('./connection-wrapper');
-const AppError = require('../error/AppError');
-const errorType = require('../consts/ErrorTypes');
-const { calculateCurrentTime } = require('../utils/calculate-time');
+import connectionWrapper from './connection-wrapper.js';
+import AppError from '../error/AppError.js';
+import ErrorTypes from '../consts/ErrorTypes.js';
+import calculateCurrentTime from '../utils/calculate-time.js';
 
 
 
@@ -13,9 +13,9 @@ const addIngredient = async (ingredient) => {
     } catch (error) {
         console.log(`${calculateCurrentTime()} - ${error.message}`);
         if (error.code === "ER_DUP_ENTRY") {
-            throw new AppError(errorType.VALIDATION_ERROR, "Ingredient already exists", 400, error.code, true);
+            throw new AppError(ErrorTypes.VALIDATION_ERROR, "Ingredient already exists", 400, error.code, true);
         }
-        throw new AppError(errorType.DB_ERROR, "Failed to add ingredient to database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to add ingredient to database", 500, false);
     }
 }
 
@@ -25,7 +25,7 @@ const getAllIngredients = async () => {
         let ingredients = await connectionWrapper.execute(sql);
         return ingredients;
     } catch (error) {
-        throw new AppError(errorType.DB_ERROR, "Failed to get ingredients from database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to get ingredients from database", 500, false);
     }
 }
 const getIngredient = async (ingredientId) => {
@@ -35,7 +35,7 @@ const getIngredient = async (ingredientId) => {
         let ingredient = await connectionWrapper.executeWithParameters(sql, parameters);
         return ingredient;
     } catch (error) {
-        throw new AppError(errorType.DB_ERROR, "Failed to get ingredient from database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to get ingredient from database", 500, false);
     }
 }
 
@@ -49,7 +49,7 @@ const getIngredientsByRecipeId = async (recipeId) => {
         let ingredients = await connectionWrapper.executeWithParameters(sql, parameters);
         return ingredients;
     } catch (error) {
-        throw new AppError(errorType.DB_ERROR, "Failed to get ingredients from database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to get ingredients from database", 500, false);
     }
 }
 
@@ -61,7 +61,7 @@ const updateIngredient = async (ingredient) => {
     try {
         await connectionWrapper.executeWithParameters(sql, parameters);
     } catch (error) {
-        throw new AppError(errorType.DB_ERROR, "Failed to update ingredient in database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to update ingredient in database", 500, false);
     }
 }
 const deleteIngredient = async (ingredientId) => {
@@ -71,7 +71,7 @@ const deleteIngredient = async (ingredientId) => {
         await connectionWrapper.executeWithParameters(sql, parameters);
     } catch (error) {
         console.log(`${calculateCurrentTime()} - ${error.message}`);
-        throw new AppError(errorType.DB_ERROR, "Failed to delete ingredient from database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to delete ingredient from database", 500, false);
     }
 }
 
@@ -88,7 +88,7 @@ const checkIfIngredientsExist = async (ingredients, connection) => {
         let existingIngredients = rows.map(row => ({ name: row.name, id: row.id }));
         return existingIngredients;
     } catch (error) {
-        throw new AppError(errorType.DB_ERROR, "Failed to get ingredients from database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to get ingredients from database", 500, false);
     }
 };
 
@@ -106,7 +106,7 @@ async function addIngredientsFromRecipe(ingredients, connection) {
             ingredientsReturning.push({ id: result[0].insertId, name: ingredient.name });
         } catch (error) {
             if (error.code === "ER_DUP_ENTRY") {
-                throw new AppError(errorType.VALIDATION_ERROR, "Ingredient already exists", 400, error.code, true);
+                throw new AppError(ErrorTypes.VALIDATION_ERROR, "Ingredient already exists", 400, error.code, true);
             }
             console.log(`${calculateCurrentTime()} - ${error.message}`);
             throw new Error("Failed to add ingredient to database", 500, false);
@@ -116,7 +116,7 @@ async function addIngredientsFromRecipe(ingredients, connection) {
 }
 
 
-module.exports = {
+export default {
     addIngredient,
     getAllIngredients,
     getIngredient,

@@ -1,11 +1,13 @@
-require('dotenv').config();
-const { validateSignup, validateLogin } = require("./validator");
-const usersDal = require("../dal/users-dal");
-const bcrypt = require("bcrypt");
-const AppError = require("../error/AppError");
-const errorType = require("../consts/ErrorTypes");
-const { response } = require("express");
-const jwt = require('jsonwebtoken');
+import { config } from 'dotenv';
+config();
+import validator from './validator.js';
+const { validateLogin, validateSignup } = validator;
+
+import usersDal from "../dal/users-dal.js";
+import bcrypt from "bcrypt";
+import AppError from "../error/AppError.js";
+import errorType from "../consts/ErrorTypes.js";
+import jwt from 'jsonwebtoken';
 
 const login = async (userLoginDetails) => {
     const { error, value } = validateLogin(userLoginDetails);
@@ -71,7 +73,7 @@ const getAllUsers = async () => {
 
 
 
-module.exports = {
+export default{
     register,
     getUser,
     login,

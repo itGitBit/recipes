@@ -1,6 +1,6 @@
-const connectionWrapper = require('./connection-wrapper');
-const AppError = require('../error/AppError');
-const errorType = require('../consts/ErrorTypes');
+import connectionWrapper from './connection-wrapper.js';
+import AppError from '../error/AppError.js';
+import ErrorTypes from '../consts/ErrorTypes.js';
 
 
 
@@ -12,7 +12,7 @@ const addRecipe = async (recipe, connection) => {
         return response.insertId;
     } catch (error) {
         cconsole.log(`${calculateCurrentTime()} - recipesDal.AddRecipe ${error.message}`);
-        throw new AppError(errorType.DB_ERROR, "Failed to add recipe to database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to add recipe to database", 500, false);
     }
 }
 
@@ -23,7 +23,7 @@ const getAllRecipes = async () => {
         return recipes;
     } catch (error) {
         console.log(`${calculateCurrentTime()} - recipesDal.getAllRecipes ${error.message}`);
-        throw new AppError(errorType.DB_ERROR, "Failed to get all recipes from database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to get all recipes from database", 500, false);
     }
 }
 
@@ -40,7 +40,7 @@ const linkRecipeWithTags = async (recipeId, tagsId, connection) => {
         await connection.execute(sql, parameters);
     } catch (error) {
         console.log(`${calculateCurrentTime()} - recipesDal.likeRecipesWithTags ${error.message}`);
-        throw new AppError(errorType.DB_ERROR, error.message, 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, error.message, 500, false);
     }
 };
 
@@ -53,7 +53,7 @@ const linkRecipeWithIngredients = async (recipeId, ingredientsId, connection) =>
         await connection.execute(sql, parameters);
     } catch (error) {
         console.log(`${calculateCurrentTime()} - recipesDal.likeRecipesWithIngredients ${error.message}`);
-        throw new AppError(errorType.DB_ERROR, "Failed to add ingredients to recipe in database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to add ingredients to recipe in database", 500, false);
     }
 };
 
@@ -64,7 +64,7 @@ const updateLikeCounter = async (recipeId, amountToUpdate, connection) => {
         await connectionWrapper.executeWithParameters(sql, parameters, connection);
     } catch (error) {
         console.log(`${calculateCurrentTime()} - recipesDal.updateLikeCounter ${error.message}`);
-        throw new AppError(errorType.DB_ERROR, error.message, 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, error.message, 500, false);
     }
 }
 
@@ -81,7 +81,7 @@ const checkIfRecipeExists = async (recipeId) => {
         }
     } catch (error) {
         console.log(`${calculateCurrentTime()} - recipesDal.checkIfRecipeExists ${error.message}`);
-        throw new AppError(errorType.DB_ERROR, "Failed to check if recipe exists in database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to check if recipe exists in database", 500, false);
     }
 }
 
@@ -93,7 +93,7 @@ const getRecipe = async (recipeId) => {
         return recipe;
     } catch (error) {
         console.log(`${calculateCurrentTime()} - recipesDal.getRecipe ${error.message}`);
-        throw new AppError(errorType.DB_ERROR, "Failed to get recipe from database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to get recipe from database", 500, false);
     }
 }
 const deleteRecipe = async (recipeId, connection) => {
@@ -103,7 +103,7 @@ const deleteRecipe = async (recipeId, connection) => {
         await connectionWrapper.executeWithParameters(sql, parameters, connection);
     } catch (error) {
         console.log(`${calculateCurrentTime()} - recipesDal.deleteRecipe ${error.message}`);
-        throw new AppError(errorType.DB_ERROR, "Failed to delete recipe from database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to delete recipe from database", 500, false);
     }
 }
 
@@ -114,7 +114,7 @@ const deleteIngredientsRecipesTableColumn = async (recipeId, connection) => {
         await connectionWrapper.executeWithParameters(sql, parameters, connection);
     } catch (error) {
         console.log(`${calculateCurrentTime()} - recipesDal.deleteIngredientsRecipesTableColumn ${error.message}`);
-        throw new AppError(errorType.DB_ERROR, "Failed to delete recipe_ingredients from database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to delete recipe_ingredients from database", 500, false);
     }
 }
 const deleteTagsRecipesTableColumn = async (recipeId, connection) => {
@@ -124,14 +124,14 @@ const deleteTagsRecipesTableColumn = async (recipeId, connection) => {
         await connectionWrapper.executeWithParameters(sql, parameters, connection);
     } catch (error) {
         console.log(`${calculateCurrentTime()} - recipesDal.deleteTagsRecipesTableColumn ${error.message}`);
-        throw new AppError(errorType.DB_ERROR, "Failed to delete recipe_tags from database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to delete recipe_tags from database", 500, false);
     }
 }
 
 
 
 
-module.exports = {
+export default {
     addRecipe,
     linkRecipeWithIngredients,
     linkRecipeWithTags,

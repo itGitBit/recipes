@@ -1,8 +1,8 @@
-const errorTypes = require("../consts/ErrorTypes");
-const AppError = require("../error/AppError");
-const {calculateCurrentTime} = require("./calculate-time")
+import errorTypes from "../consts/ErrorTypes.js";
+import AppError from "../error/AppError.js";
+import calculateCurrentTime from "./calculate-time.js";
 
-exports.tryCatch = (controller) => async (req, res, next) => {
+export function tryCatch(controller) { return async (req, res, next) => {
     try {
         await controller(req, res);
     } catch (error) {
@@ -10,5 +10,5 @@ exports.tryCatch = (controller) => async (req, res, next) => {
         return next(error);
 
     }
-};
+};     }
 

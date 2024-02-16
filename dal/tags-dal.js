@@ -1,6 +1,6 @@
-const connectionWrapper = require('./connection-wrapper');
-const AppError = require('../error/AppError');
-const errorType = require('../consts/ErrorTypes');
+import connectionWrapper from './connection-wrapper.js';
+import AppError from '../error/AppError.js';
+import ErrorTypes from '../consts/ErrorTypes.js';
 
 
 const addTag = async (tag) => {
@@ -10,9 +10,9 @@ const addTag = async (tag) => {
         await connectionWrapper.executeWithParameters(sql, parameters);
     } catch (error) {
         if (error.code === "ER_DUP_ENTRY") {
-            throw new AppError(errorType.VALIDATION_ERROR, "Tag already exists", 400, error.code, true);
+            throw new AppError(ErrorTypes.VALIDATION_ERROR, "Tag already exists", 400, error.code, true);
         }
-        throw new AppError(errorType.DB_ERROR, "Failed to add tag to database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to add tag to database", 500, false);
     }
 }
 
@@ -24,7 +24,7 @@ const getAllTags = async () => {
         let tags = await connectionWrapper.execute(sql);
         return tags;
     } catch (error) {
-        throw new AppError(errorType.DB_ERROR, "Failed to get tags from database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to get tags from database", 500, false);
     }
 }
 
@@ -35,7 +35,7 @@ const getTag = async (tagId) => {
         let tag = await connectionWrapper.executeWithParameters(sql, parameters);
         return tag;
     } catch (error) {
-        throw new AppError(errorType.DB_ERROR, error.message, 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, error.message, 500, false);
     }
 }
 
@@ -45,7 +45,7 @@ const updateTag = async (tag) => {
     try {
         await connectionWrapper.executeWithParameters(sql, parameters);
     } catch (error) {
-        throw new AppError(errorType.DB_ERROR, "Failed to update tag in database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to update tag in database", 500, false);
     }
 }
 
@@ -55,7 +55,7 @@ const deleteTag = async (tagId) => {
     try {
         await connectionWrapper.executeWithParameters(sql, parameters);
     } catch (error) {
-        throw new AppError(errorType.DB_ERROR, "Failed to delete tag from database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to delete tag from database", 500, false);
     }
 }
 
@@ -68,7 +68,7 @@ const getTagsByRecipeId = async (recipeId) => {
         let tags = await connectionWrapper.executeWithParameters(sql, parameters);
         return tags;
     } catch (error) {
-        throw new AppError(errorType.DB_ERROR, "Failed to get tags from database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to get tags from database", 500, false);
     }
 }
 
@@ -81,7 +81,7 @@ const checkIfTagsExist = async (tags, connection) => {
         const existingTags = rows.map(row => ({ name: row.name, id: row.id }));
         return existingTags;
     } catch (error) {
-        throw new AppError(errorType.DB_ERROR, "Failed to check if tags exist in database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to check if tags exist in database", 500, false);
     }
 };
 
@@ -97,7 +97,7 @@ const addTagsFromRecipe = async (tags, connection) => {
             tagsReturning.push({ id: result[0].insertId, name: tag.name });
         } catch (error) {
             if (error.code === "ER_DUP_ENTRY") {
-                throw new AppError(errorType.VALIDATION_ERROR, "tag already exists", 400, error.code, true);
+                throw new AppError(ErrorTypes.VALIDATION_ERROR, "tag already exists", 400, error.code, true);
             }
             console.log(error.message);
             throw new Error("Failed to add tag to database", 500, false);
@@ -107,7 +107,7 @@ const addTagsFromRecipe = async (tags, connection) => {
     return tagsReturning; // Return the collection of new ingredient IDs
 }
 
-module.exports = {
+export default {
     addTag,
     getAllTags,
     getTag,
