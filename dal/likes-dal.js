@@ -8,7 +8,7 @@ const addLike = async (like, connection) => {
     let sql = "insert into likes (user_id, recipe_id) values (?, ?)";
     let parameters = [like.userId, like.recipeId];
     try {
-        let row = await connectionWrapper.executeWithParameters(sql, parameters,connection);
+        let row = await connectionWrapper.executeWithParameters(sql, parameters, connection);
     } catch (error) {
         if (error.code === "ER_DUP_ENTRY") {
             throw new AppError(ErrorTypes.DOUBLE_LIKE, "Like already exists", 400, error.code, true);
@@ -67,7 +67,7 @@ const deleteLike = async (userId, recipeId, connection) => {
     }
 }
 
-const deleteLikesByRecipeId = async (recipeId, connection) => {
+const deleteLikesByRecipeId = async (recipeId, connection = null) => {
     let sql = "delete from likes where recipe_id = ?";
     let parameters = [recipeId];
     try {
@@ -81,7 +81,7 @@ const deleteLikesByRecipeId = async (recipeId, connection) => {
     }
 }
 
-const toggleLikeOff = async (recipeId, userId) =>{
+const toggleLikeOff = async (recipeId, userId) => {
     let sql = "delete from likes where user_id = ? and recipe_id = ?";
     let parameters = [userId, recipeId];
     try {

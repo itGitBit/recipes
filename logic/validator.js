@@ -30,7 +30,7 @@ const commentsSchema = Joi.object({
 
 const ingredientsSchema = Joi.object({
     id: Joi.number(),
-    name: Joi.string().min(3).max(30).regex(/^[A-Za-z\s]+$/).required()
+    name: Joi.string().min(3).max(30).regex(/^[A-Za-z\s-]+$/).required()
 });
 const likesSchema = Joi.object({
     userId: Joi.number().required(),
@@ -46,13 +46,13 @@ const recipeSchema = Joi.object({
     steps: Joi.string().min(3).max(1000).required(),
     ingredients: Joi.array().items(Joi.object({
         id: Joi.number(),
-        name: Joi.string().min(3).max(30).regex(/^[A-Za-z\s]+$/).required()
+        name: Joi.string().min(3).max(30).regex(/^[A-Za-z\s-]+$/).required()
     })),
     tags: Joi.array().items(Joi.object({
         id: Joi.number(),
-        name: Joi.string().min(3).max(30).regex(/^[A-Za-z\s]+$/).required()
+        name: Joi.string().min(3).max(30).regex(/^[A-Za-z\s-]+$/).required()
     })),
-    likesAmount: Joi.number(),
+    likesAmount: Joi.number().valid(0).required(),
 
 });
 

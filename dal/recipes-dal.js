@@ -1,23 +1,24 @@
 import connectionWrapper from './connection-wrapper.js';
 import AppError from '../error/AppError.js';
 import ErrorTypes from '../consts/ErrorTypes.js';
+import calculateCurrentTime from '../utils/calculate-time.js';
 
 
 
 const addRecipe = async (recipe, connection) => {
     let sql = "insert into recipes (title, description, image, steps, user_id, likes_amount) values (?,?,?,?,?,?)";
-    let parameters = [recipe.title, recipe.description, recipe.steps, recipe.image, recipe.userId, recipe.likesAmount];
+    let parameters = [recipe.title, recipe.description, recipe.image, recipe.steps, recipe.userId, recipe.likesAmount];
     try {
         let response = await connectionWrapper.executeWithParameters(sql, parameters, connection);
         return response.insertId;
     } catch (error) {
-        cconsole.log(`${calculateCurrentTime()} - recipesDal.AddRecipe ${error.message}`);
+        console.log(`${calculateCurrentTime()} - recipesDal.AddRecipe ${error.message}`);
         throw new AppError(ErrorTypes.DB_ERROR, "Failed to add recipe to database", 500, false);
     }
 }
 
 const getAllRecipes = async () => {
-    let sql = `SELECT id, title, description, image, steps, user_id, likes_amount FROM recipes;`;
+    let sql = `SELECT id, title, description, image, steps, user_id, likes_amount as likesAmount FROM recipes;`;
     try {
         let recipes = await connectionWrapper.execute(sql);
         return recipes;
@@ -37,7 +38,7 @@ const linkRecipeWithTags = async (recipeId, tagsId, connection) => {
 
     try {
         // Ensure the transaction connection is used if provided
-        await connection.execute(sql, parameters);
+        await connectionWrapper.executeWithParameters(sql, parameters, connection);
     } catch (error) {
         console.log(`${calculateCurrentTime()} - recipesDal.likeRecipesWithTags ${error.message}`);
         throw new AppError(ErrorTypes.DB_ERROR, error.message, 500, false);
@@ -50,18 +51,18 @@ const linkRecipeWithIngredients = async (recipeId, ingredientsId, connection) =>
     const parameters = ingredientsId.flatMap(ingredientId => [recipeId, ingredientId]);
 
     try {
-        await connection.execute(sql, parameters);
+        await connectionWrapper.executeWithParameters(sql, parameters, connection);
     } catch (error) {
-        console.log(`${calculateCurrentTime()} - recipesDal.likeRecipesWithIngredients ${error.message}`);
+        console.log(`${calculateCurrentTime()} - recipesDal.linkRecipeWithIngredients ${error.message}`);
         throw new AppError(ErrorTypes.DB_ERROR, "Failed to add ingredients to recipe in database", 500, false);
     }
 };
 
-const updateLikeCounter = async (recipeId, amountToUpdate, connection) => {
-    let sql = "update recipes set likes_amount=likes_amount + ? where id = ?";
+const updateLikeCounter = async (recipeId, amountToUpdate) => {
+    let sql = "update recipes set likes_amount = ? where id = ?";
     let parameters = [amountToUpdate, recipeId];
     try {
-        await connectionWrapper.executeWithParameters(sql, parameters, connection);
+        await connectionWrapper.executeWithParameters(sql, parameters);
     } catch (error) {
         console.log(`${calculateCurrentTime()} - recipesDal.updateLikeCounter ${error.message}`);
         throw new AppError(ErrorTypes.DB_ERROR, error.message, 500, false);

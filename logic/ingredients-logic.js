@@ -4,7 +4,7 @@ import AppError from '../error/AppError.js';
 import ErrorTypes from '../consts/ErrorTypes.js';
 
 const addIngredient = async (ingredient) => {
-    const {error, value} = validator.validateIngredients(ingredient);
+    const { error, value } = validator.validateIngredients(ingredient);
     if (error) {
         throw new AppError(ErrorTypes.VALIDATION_ERROR, error.message, 400, error.code, true);
     }
@@ -28,7 +28,7 @@ const getIngredient = async (ingredientId) => {
 };
 
 const updateIngredient = async (ingredient) => {
-    const {error,value} = validator.validateIngredients(ingredient);
+    const { error, value } = validator.validateIngredients(ingredient);
     if (error) {
         throw new AppError(ErrorTypes.VALIDATION_ERROR, error.message, 400, error.code, true);
     }
@@ -64,18 +64,17 @@ const addIngredientsFromRecipe = async (ingredients, connection) => {
         values.push(value);
         if (error) {
             throw new AppError(ErrorTypes.VALIDATION_ERROR, error.message, 400, error.code, true);
-
         }
     });
     try {
-        let existingIngredients = await ingredientsDal.checkIfIngredientsExist(values, connection); 
+        let existingIngredients = await ingredientsDal.checkIfIngredientsExist(values, connection);
         const existingIngredientNames = existingIngredients.map(ingredient => ingredient.name);
         const newIngredients = values.filter(ingredient =>
             !existingIngredientNames.map(name => name.toLowerCase()).includes(ingredient.name.toLowerCase())
         );
 
         if (newIngredients.length > 0) {
-            let addedIngredients = await ingredientsDal.addIngredientsFromRecipe(newIngredients, connection); 
+            let addedIngredients = await ingredientsDal.addIngredientsFromRecipe(newIngredients, connection);
             existingIngredients.push(...addedIngredients);
         }
         return existingIngredients;

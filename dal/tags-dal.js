@@ -89,7 +89,6 @@ const checkIfTagsExist = async (tags, connection) => {
 const addTagsFromRecipe = async (tags, connection) => {
     let tagsReturning = [];
     for (const tag of tags) {
-        console.log(`tags-dal: tag: ${JSON.stringify(tag.name)}`);
         const sql = "INSERT INTO tags (name) VALUES (?)";
         const parameters = [tag.name];
         try {
@@ -103,7 +102,6 @@ const addTagsFromRecipe = async (tags, connection) => {
             throw new Error("Failed to add tag to database", 500, false);
         }
     }
-    console.log(`tags-dal: tagsReturning: ${JSON.stringify(tagsReturning)}`);
     return tagsReturning; // Return the collection of new ingredient IDs
 }
 

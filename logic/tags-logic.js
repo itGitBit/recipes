@@ -69,13 +69,13 @@ const addTagsFromRecipe = async (tags, connection) => {
     });
     const existingTags = await tagsDal.checkIfTagsExist(values, connection);
     const existingTagsNames = existingTags.map(tag => tag.name);
-    const newTagsList = tags.filter(tag => !existingTagsNames.includes(tag.name));
-    console.log(`tags-logic: newTagsList: ${JSON.stringify(newTagsList)}`);
+    const newTagsList = values.filter(value =>
+        !existingTagsNames.map(name => name.toLowerCase()).includes(value.name.toLowerCase())
+    );
     if (newTagsList.length > 0) {
         let addedTags = await tagsDal.addTagsFromRecipe(newTagsList, connection);
         existingTags.push(...addedTags);
     }
-    console.log(`tags-logic: existingTags: ${existingTags}`);
     return existingTags;
 }
 

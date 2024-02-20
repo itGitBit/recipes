@@ -7,36 +7,64 @@ import connectionWrapper from '../dal/connection-wrapper.js';
 
 //use import instead of require
 
-const addLike = async (like) => {
 
-    //overkill. preferred to count the like per recipe everytime a like is added.
-    let connection;
-    const {error, value} = validateLikes.validateLikes(like);
+//With transaction
+////overkill. preferred to count the like per recipe everytime a like is added.
+
+// const addLike = async (like) => {
+//     let connection;
+//     const {error, value} = validateLikes.validateLikes(like);
+//     if (error) {
+//         throw new AppError(errorType.VALIDATION_ERROR, error.message, 400, error.code, true);
+//     }
+//     try {
+//         connection = await connectionWrapper.beginTransaction();
+//         await likesDal.addLike(value, connection);
+//         await recipeLogic.updateLikeCounter(value.recipeId, +1, connection);
+//         await connectionWrapper.commitTransaction(connection);
+//         return "like added";
+//     } catch (error) {
+//         if (error.errorType === errorType.DOUBLE_LIKE) {
+//             try {
+//                 await toggleLikeOff(value.userId, value.recipeId, -1, connection);
+//                 await connectionWrapper.commitTransaction(connection);
+//                 return "like removed"; 
+//             } catch (innerError) {
+//                 await connectionWrapper.rollbackTransaction(connection);
+//             }
+//         } else if (connection) {
+//             await connectionWrapper.rollbackTransaction(connection);
+//         }
+//         throw new AppError(errorType.DB_ERROR, "Failed to add like to database", 500, false);
+//     }
+// };
+
+
+const addLike = async (like) => {
+    const { error, value } = validateLikes.validateLikes(like);
     if (error) {
         throw new AppError(errorType.VALIDATION_ERROR, error.message, 400, error.code, true);
     }
     try {
-        connection = await connectionWrapper.beginTransaction();
-        await likesDal.addLike(value, connection);
-        await recipeLogic.updateLikeCounter(value.recipeId, +1, connection);
-        await connectionWrapper.commitTransaction(connection);
+        await likesDal.addLike(value);
+        await recipeLogic.updateLikeCounter(value.recipeId);
         return "like added";
-    } catch (error) {
+    }
+    catch (error) {
         if (error.errorType === errorType.DOUBLE_LIKE) {
             try {
-                await toggleLikeOff(value.userId, value.recipeId, -1, connection);
-                await connectionWrapper.commitTransaction(connection);
-                return "like removed"; 
-            } catch (innerError) {
-                await connectionWrapper.rollbackTransaction(connection);
+                await toggleLikeOff(value.userId, value.recipeId);
+                return "like removed";
             }
-        } else if (connection) {
-            await connectionWrapper.rollbackTransaction(connection);
+            catch (innerError) {
+                throw new AppError(errorType.DB_ERROR, "Failed to add like to database", 500, false);
+            }
         }
-        throw new AppError(errorType.DB_ERROR, "Failed to add like to database", 500, false);
+        else {
+            throw new AppError(errorType.DB_ERROR, "Failed to add like to database", 500, false);
+        }
     }
-
-};
+}
 
 const getAllLikes = async () => {
     const likes = await likesDal.getAllLikes();
@@ -62,32 +90,28 @@ const getAllLikesByUserId = async (userId) => {
 }
 
 const deleteLike = async (userId, recipeId) => {
-    let connection;
     try {
-        connection = await connectionWrapper.beginTransaction();
-        await recipeLogic.updateLikeCounter(recipeId, -1);
         await likesDal.deleteLike(userId, recipeId);
-        await connectionWrapper.commitTransaction(connection);
+        await recipeLogic.updateLikeCounter(recipeId);
+
     }
     catch (error) {
-        if (connection) {
-            await connectionWrapper.rollbackTransaction(connection);
-            throw new AppError(errorType.DB_ERROR, error.message, 500, true);
-        }
-
+        throw new AppError(errorType.DB_ERROR, error.message, 500, true);
     }
+
 };
 
-const toggleLikeOff = async (userId, recipeId, amountToUpdate, connection) => {
+const toggleLikeOff = async (userId, recipeId) => {
     try {
-        await recipeLogic.updateLikeCounter(recipeId, amountToUpdate, connection);
-        await likesDal.deleteLike(userId, recipeId, connection);
+        await likesDal.deleteLike(userId, recipeId);
+        await recipeLogic.updateLikeCounter(recipeId);
     } catch (error) {
         throw new AppError(errorType.DB_ERROR, error.message, 500, false)
     }
 }
 
-const deleteLikesByRecipeId = async (recipeId, connection) => {
+
+const deleteLikesByRecipeIdWithConnection = async (recipeId, connection) => {
     await likesDal.deleteLikesByRecipeId(recipeId, connection);
 };
 
@@ -98,5 +122,5 @@ export default {
     getAllLikesByRecipeId,
     deleteLike,
     getAllLikesByUserId,
-    deleteLikesByRecipeId
+    deleteLikesByRecipeIdWithConnection
 };

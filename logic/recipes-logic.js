@@ -10,17 +10,20 @@ import calculateCurrentTime from '../utils/calculate-time.js';
 
 
 
+
 //WITH TRANSACTION
 async function addRecipe(recipe, ingredients, tags) {
     let connection;
-    let {error,value} = validator.validateRecipe(recipe);
+    
+    let { error, value } = validator.validateRecipe(recipe);
     if (error) {
         throw new AppError(errorType.VALIDATION_ERROR, error.message, 400, error.code, true);
     }
     try {
         connection = await connectionWrapper.beginTransaction();
+        await recipesDal.checkIfRecipeExists(value);
         let newRecipeId = await recipesDal.addRecipe(value, connection);
-        await organizeIngredients(ingredients, connection);
+        await organizeIngredients(ingredients, connection, newRecipeId);
         await organizeTags(tags, connection, newRecipeId);
         await connectionWrapper.commitTransaction(connection);
 
@@ -51,7 +54,7 @@ const deleteRecipe = async (recipeId) => {
         await recipesDal.deleteIngredientsRecipesTableColumn(recipeId, connection);
         await recipesDal.deleteTagsRecipesTableColumn(recipeId, connection);
         await recipesDal.deleteRecipe(recipeId, connection);
-        await likesLogic.deleteLikesByRecipeId(recipeId, connection);
+        await likesLogic.deleteLikesByRecipeIdWithConnection(recipeId, connection);
         await connectionWrapper.commitTransaction(connection);
         console.log('Recipe and its components were deleted successfully.');
     }
@@ -63,8 +66,11 @@ const deleteRecipe = async (recipeId) => {
 };
 
 
-const updateLikeCounter = async (recipeId, amountToUpdate, connection) => {
-    await recipesDal.updateLikeCounter(recipeId, amountToUpdate, connection);
+const updateLikeCounter = async (recipeId) => {
+    let likesPerRecipe = await likesLogic.getAllLikesByRecipeId(recipeId);
+    let likesAmount = likesPerRecipe.length;
+    await recipesDal.updateLikeCounter(recipeId, likesAmount);
+    return likesAmount;
 };
 
 const checkIfRecipeExists = async (recipeId) => {
@@ -79,19 +85,23 @@ const checkIfRecipeExists = async (recipeId) => {
 
 
 const getAllRecipes = async () => {
-
     const recipes = await recipesDal.getAllRecipes();
     if (!recipes || recipes.length === 0) {
         throw new AppError(errorType.NO_RECIPES_FOUND, "no recipes found", 404, "no recipes found", true);
     }
-    const recipeIds = recipes.map(recipe => recipe.id);
-    const tagsPromises = recipeIds.map(id => tagsLogic.getTagsByRecipeId(id));
-    const ingredientsPromises = recipeIds.map(id => ingredientsLogic.getIngredientsByRecipeId(id));
-    const tagsResults = await Promise.all(tagsPromises);
-    const ingredientsResults = await Promise.all(ingredientsPromises);
-    const tags = tagsResults.flat();
-    const ingredients = ingredientsResults.flat();
-    return { recipes, tags, ingredients };
+    const updatedRecipes = await Promise.all(recipes.map(async (recipe) => {
+        const updatedRecipeLikesAmount = await updateLikeCounter(recipe.id);
+        const tags = await tagsLogic.getTagsByRecipeId(recipe.id);
+        const ingredients = await ingredientsLogic.getIngredientsByRecipeId(recipe.id);
+        return {
+            ...recipe,
+            likesAmount: updatedRecipeLikesAmount,
+            tags: tags,
+            ingredients: ingredients
+        };
+    }));
+
+    return updatedRecipes;
 };
 
 const getRecipe = async (recipeId) => {
