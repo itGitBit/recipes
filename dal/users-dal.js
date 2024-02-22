@@ -1,32 +1,33 @@
 import ErrorTypes from "../consts/ErrorTypes.js";
 import AppError from "../error/AppError.js";
-import connectionWrapper from "./connection-wrapper.js";
+import { execute, executeWithParameters } from "./connection-wrapper.js";
+import calculateCurrentTime from '../utils/calculate-time.js';
 
 
 const addUser = async (user) => {
     let sql = " INSERT INTO users (username, password, email, type, profile_picture, active) VALUES (?, ?, ?, ?,?)"
     let parameters = [user.username, user.password, user.email, user.type];
     try {
-        await connectionWrapper.executeWithParameters(sql, parameters);
+        await executeWithParameters(sql, parameters);
     } catch (error) {
         if (error.code === "ER_DUP_ENTRY") {
             throw new AppError(ErrorTypes.VALIDATION_ERROR, "User already exists", 400, error.code, true);
         }
         console.log(error.message);
-        throw new AppError(ErrorTypes.DB_ERROR, "Failed to add user to database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, `${calculateCurrentTime()} ${error.message}`, 500, false);
     }
 }
 
 
 const getUser = async (userId) => {
-    let sql = "select username, email, type, profile_picture from users where id=?"
+    let sql = "select username, profile_picture as profilePicture from users where id=?"
     let parameters = [userId];
     let user;
     try {
-        user = await connectionWrapper.executeWithParameters(sql, parameters);
+        user = await executeWithParameters(sql, parameters);
         if (!user) {
 
-            throw new AppError(ErrorTypes.INVALID_USER, "user not found", 404, true);
+            throw new AppError(ErrorTypes.INVALID_USER, `${calculateCurrentTime()} ${error.message}`, 404, true);
         }
 
     }
@@ -37,7 +38,7 @@ const getUser = async (userId) => {
         }
 
         console.log(error.message);
-        throw new AppError(ErrorTypes.DB_ERROR, "Failed to get user from database", 500, false);
+        throw new AppError(ErrorTypes.DB_ERROR, `${calculateCurrentTime()} ${error.message}`, 500, false);
     }
     return user;
 
@@ -48,13 +49,13 @@ const getAllUsers = async () => {
     try {
         let userList = await connection.execute(sql);
         if (!userList) {
-            throw new AppError(ErrorTypes.INVALID_USER, "no user found in database", 404, true);
+            throw new AppError(ErrorTypes.INVALID_USER, `${calculateCurrentTime()} ${error.message}`, 404, true);
         }
     } catch (error) {
         if (error instanceof AppError) {
             throw error;
         }
-        console.log(error.message);
+        console.log(`${calculateCurrentTime()} - usersDal.getAllUsers ${error.message}`);
         throw new AppError(ErrorTypes.DB_ERROR, "Failed to get users from database", 500, false);
     }
     return userList;
@@ -64,7 +65,7 @@ const isUserExist = async (email) => {
     let sql = "select email from users where email = ?"
     let parameters = [email];
     try {
-        let user = await connectionWrapper.executeWithParameters(sql, parameters);
+        let user = await executeWithParameters(sql, parameters);
         if (user[0] != null) {
             console.log("user already exists", user);
             throw new AppError(ErrorTypes.INVALID_USER, "user already exists", 404, true);
@@ -85,7 +86,7 @@ const getUserByEmail = async (email, password) => {
     const sql = "SELECT id, username, password, email, type, profile_picture FROM users WHERE email = ?";
     let parameters = [email];
     try {
-        let users = await connectionWrapper.executeWithParameters(sql, parameters);
+        let users = await executeWithParameters(sql, parameters);
         let user = users[0];
         if (!user) {
             throw new AppError("user not found");
@@ -101,12 +102,35 @@ const getUserByEmail = async (email, password) => {
     return user;
 }
 
+const deleteUser = async (userId) => {
+    const sql = ' delete from users where id = ?';
+    let parameters = [userId];
+    try {
+        await executeWithParameters(sql, parameters);
+    } catch (error) {
+        console.log(`${calculateCurrentTime()} - usersDal.deleteUser - ${error.message}`)
+        throw new AppError(ErrorTypes.DB_ERROR, "failed to delete user", 500, false)
+    }
+}
+const updateUser = async (user) => {
+    let sql = 'update users set username=?, password=?, email=?, type=?, profile_picture=? where id=?';
+    let parameters = [user.username, user.password, user.email, user.type, user.profilePicture, user.id];
+    try {
+        await executeWithParameters(sql, parameters);
+    } catch (error) {
+        console.log(`${calculateCurrentTime()} - usersDal.updateUser - ${error.message}`)
+        throw new AppError(ErrorTypes.DB_ERROR, "failed to update user", 500, false)
+    }
+}
 
 
-export default {
+
+export {
     addUser,
     getUser,
     getAllUsers,
     getUserByEmail,
-    isUserExist
+    isUserExist,
+    deleteUser,
+    updateUser
 }

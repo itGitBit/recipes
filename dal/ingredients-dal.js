@@ -1,4 +1,4 @@
-import connectionWrapper from './connection-wrapper.js';
+import { execute, executeWithParameters } from './connection-wrapper.js';
 import AppError from '../error/AppError.js';
 import ErrorTypes from '../consts/ErrorTypes.js';
 import calculateCurrentTime from '../utils/calculate-time.js';
@@ -9,7 +9,7 @@ const addIngredient = async (ingredient) => {
     let sql = "insert into ingredients (name) values (?)";
     let parameters = [ingredient.name];
     try {
-        await connectionWrapper.executeWithParameters(sql, parameters);
+        await executeWithParameters(sql, parameters);
     } catch (error) {
         console.log(`${calculateCurrentTime()} - ${error.message}`);
         if (error.code === "ER_DUP_ENTRY") {
@@ -22,7 +22,7 @@ const addIngredient = async (ingredient) => {
 const getAllIngredients = async () => {
     let sql = "select id,name from ingredients";
     try {
-        let ingredients = await connectionWrapper.execute(sql);
+        let ingredients = await execute(sql);
         return ingredients;
     } catch (error) {
         throw new AppError(ErrorTypes.DB_ERROR, "Failed to get ingredients from database", 500, false);
@@ -32,7 +32,7 @@ const getIngredient = async (ingredientId) => {
     let sql = "select id, name from ingredients where id = ?";
     let parameters = [ingredientId];
     try {
-        let ingredient = await connectionWrapper.executeWithParameters(sql, parameters);
+        let ingredient = await executeWithParameters(sql, parameters);
         return ingredient;
     } catch (error) {
         throw new AppError(ErrorTypes.DB_ERROR, "Failed to get ingredient from database", 500, false);
@@ -46,7 +46,7 @@ const getIngredientsByRecipeId = async (recipeId) => {
 
     let parameters = [recipeId];
     try {
-        let ingredients = await connectionWrapper.executeWithParameters(sql, parameters);
+        let ingredients = await executeWithParameters(sql, parameters);
         return ingredients;
     } catch (error) {
         throw new AppError(ErrorTypes.DB_ERROR, "Failed to get ingredients from database", 500, false);
@@ -59,7 +59,7 @@ const updateIngredient = async (ingredient) => {
     let sql = "update ingredients set name = ? where id = ?";
     let parameters = [ingredient.name, ingredient.id];
     try {
-        await connectionWrapper.executeWithParameters(sql, parameters);
+        await executeWithParameters(sql, parameters);
     } catch (error) {
         throw new AppError(ErrorTypes.DB_ERROR, "Failed to update ingredient in database", 500, false);
     }
@@ -68,7 +68,7 @@ const deleteIngredient = async (ingredientId) => {
     let sql = "delete from ingredients where id = ?";
     let parameters = [ingredientId];
     try {
-        await connectionWrapper.executeWithParameters(sql, parameters);
+        await executeWithParameters(sql, parameters);
     } catch (error) {
         console.log(`${calculateCurrentTime()} - ${error.message}`);
         throw new AppError(ErrorTypes.DB_ERROR, "Failed to delete ingredient from database", 500, false);
@@ -76,18 +76,17 @@ const deleteIngredient = async (ingredientId) => {
 }
 
 const checkIfIngredientsExist = async (ingredients, connection) => {
+
     let ingredientsNames = ingredients.map(ingredient => ingredient.name);
     const placeholders = ingredientsNames.map(() => '?').join(',');
     const sql = `SELECT id, name FROM ingredients WHERE name IN (${placeholders})`;
     const parameters = ingredients.map(ingredient => ingredient.name);
-
     try {
-        // Execute the query and directly destructure to get the rows from the response
-        const [rows] = await connection.execute(sql, parameters);
-        // Map over the rows to format them as desired
-        let existingIngredients = rows.map(row => ({ name: row.name, id: row.id }));
+        const rows = await executeWithParameters(sql, parameters, connection);
+        let existingIngredients = rows.map(row => ({ id: row.id, name: row.name }));
         return existingIngredients;
     } catch (error) {
+        console.log(`${calculateCurrentTime()} - ingredientsDal.checkIfIngredientExist -  ${error.message}`);
         throw new AppError(ErrorTypes.DB_ERROR, "Failed to get ingredients from database", 500, false);
     }
 };
@@ -102,8 +101,8 @@ async function addIngredientsFromRecipe(ingredients, connection) {
         const sql = "INSERT INTO ingredients (name) VALUES (?)";
         const parameters = [ingredient.name];
         try {
-            const result = await connection.execute(sql, parameters);
-            ingredientsReturning.push({ id: result[0].insertId, name: ingredient.name });
+            const result = await executeWithParameters(sql, parameters, connection);
+                ingredientsReturning.push({ id: result.insertId, name: ingredient.name });
         } catch (error) {
             if (error.code === "ER_DUP_ENTRY") {
                 throw new AppError(ErrorTypes.VALIDATION_ERROR, "Ingredient already exists", 400, error.code, true);
@@ -112,11 +111,11 @@ async function addIngredientsFromRecipe(ingredients, connection) {
             throw new Error("Failed to add ingredient to database", 500, false);
         }
     }
-    return ingredientsReturning; // Return the collection of new ingredient IDs
+    return ingredientsReturning;
 }
 
 
-export default {
+export {
     addIngredient,
     getAllIngredients,
     getIngredient,

@@ -72,7 +72,7 @@ const validateTags = validator(tagsSchema);
 
 
 
-export default {
+export {
     validateSignup,
     validateLogin,
     validateIngredients,

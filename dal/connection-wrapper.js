@@ -50,7 +50,7 @@ async function execute(sql, connection = pool) {
 }
 
 
-export default {
+export {
     executeWithParameters,
     beginTransaction,
     commitTransaction,

@@ -1,4 +1,4 @@
-import connectionWrapper from './connection-wrapper.js';
+import { execute, executeWithParameters } from './connection-wrapper.js';
 import AppError from '../error/AppError.js';
 import ErrorTypes from '../consts/ErrorTypes.js';
 import calculateCurrentTime from '../utils/calculate-time.js';
@@ -8,7 +8,7 @@ const addLike = async (like, connection) => {
     let sql = "insert into likes (user_id, recipe_id) values (?, ?)";
     let parameters = [like.userId, like.recipeId];
     try {
-        let row = await connectionWrapper.executeWithParameters(sql, parameters, connection);
+        await executeWithParameters(sql, parameters, connection);
     } catch (error) {
         if (error.code === "ER_DUP_ENTRY") {
             throw new AppError(ErrorTypes.DOUBLE_LIKE, "Like already exists", 400, error.code, true);
@@ -22,7 +22,7 @@ const addLike = async (like, connection) => {
 const getAllLikes = async () => {
     let sql = "select user_id, recipe_id from likes";
     try {
-        let likes = await connectionWrapper.execute(sql);
+        let likes = await execute(sql);
         return likes;
     } catch (error) {
         console.log(`${calculateCurrentTime()} - ${error.message}`);
@@ -33,7 +33,7 @@ const getAllLikesByRecipeId = async (recipeId) => {
     let sql = "select user_id, recipe_id from likes where recipe_id = ?";
     let parameters = [recipeId];
     try {
-        let likes = await connectionWrapper.executeWithParameters(sql, parameters);
+        let likes = await executeWithParameters(sql, parameters);
         return likes;
     } catch (error) {
         console.log(`${calculateCurrentTime()} - ${error.message}`);
@@ -45,7 +45,7 @@ const getAllLikesByUserId = async (userId) => {
     let sql = "select user_id, recipe_id from likes where user_id = ?";
     let parameters = [userId];
     try {
-        let likes = await connectionWrapper.executeWithParameters(sql, parameters);
+        let likes = await executeWithParameters(sql, parameters);
         return likes;
     } catch (error) {
         console.log(`${calculateCurrentTime()} - ${error.message}`);
@@ -57,7 +57,7 @@ const deleteLike = async (userId, recipeId, connection) => {
     let sql = "delete from likes where user_id = ? and recipe_id = ?";
     let parameters = [userId, recipeId];
     try {
-        let deletedLikes = await connectionWrapper.executeWithParameters(sql, parameters, connection);
+        let deletedLikes = await executeWithParameters(sql, parameters, connection);
         if (deletedLikes.affectedRows === 0) {
             throw new AppError(ErrorTypes.DB_ERROR, "failed to delete any likes", 404, true);
         }
@@ -71,7 +71,7 @@ const deleteLikesByRecipeId = async (recipeId, connection = null) => {
     let sql = "delete from likes where recipe_id = ?";
     let parameters = [recipeId];
     try {
-        let deletedItems = await connectionWrapper.executeWithParameters(sql, parameters, connection);
+        let deletedItems = await executeWithParameters(sql, parameters, connection);
         if (deletedItems.affectedRows === 0) {
             throw new AppError(ErrorTypes.DB_ERROR, "failed to delete any likes", 404, true);
         }
@@ -85,7 +85,7 @@ const toggleLikeOff = async (recipeId, userId) => {
     let sql = "delete from likes where user_id = ? and recipe_id = ?";
     let parameters = [userId, recipeId];
     try {
-        let deletedLikes = await connectionWrapper.executeWithParameters(sql, parameters);
+        let deletedLikes = await executeWithParameters(sql, parameters);
         if (deletedLikes.affectedRows === 0) {
             throw new AppError(ErrorTypes.DB_ERROR, "failed to delete any likes", 404, true);
         }
@@ -96,7 +96,7 @@ const toggleLikeOff = async (recipeId, userId) => {
 }
 
 
-export default {
+export {
     addLike,
     getAllLikes,
     getAllLikesByRecipeId,

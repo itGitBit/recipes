@@ -1,37 +1,37 @@
 import express from 'express';
 const router = express.Router();
-import recipesLogic from '../logic/recipes-logic.js';
+import { addRecipe, getAllRecipes, updateRecipe, deleteRecipe, getRecipe, getAllRecipesByIngredientId, getAllRecipesByTag, getAllRecipesByUserId } from '../logic/recipes-logic.js';
 import { tryCatch } from '../utils/trycatch.js';
 
 router.post('/', tryCatch(async (request, response) => {
     let recipe = request.body;
     let ingredients = request.body.ingredients;
     let tags = request.body.tags;
-    await recipesLogic.addRecipe(recipe, ingredients, tags);
+    await addRecipe(recipe, ingredients, tags);
 
     response.status(201).json({ message: 'Recipe added successfully' });
 }));
 
 router.get('/', tryCatch(async (request, response) => {
-    const recipesExtended = await recipesLogic.getAllRecipes();
+    const recipesExtended = await getAllRecipes();
     response.status(200).json(recipesExtended);
 }));
 
 router.get('/:recipeId', tryCatch(async (request, response) => {
     const recipeId = request.params.recipeId;
-    const recipe = await recipesLogic.getRecipe(recipeId);
+    const recipe = await getRecipe(recipeId);
     response.status(200).json(recipe);
 }));
 
 router.get('/byingredient/:ingredientId', tryCatch(async (request, response) => {
     const ingredientId = request.params.ingredientId;
-    const recipes = await recipesLogic.getAllRecipesByIngredientId(ingredientId);
+    const recipes = await getAllRecipesByIngredientId(ingredientId);
     response.status(200).json(recipes);
 }));
 
-router.get('/bytags/:tags', tryCatch(async (request, response) => {
-    const tags = request.params.tags;
-    const recipes = await recipesLogic.getAllRecipesByTags(tags);
+router.get('/bytag/:tag', tryCatch(async (request, response) => {
+    const tag = request.params.tag;
+    const recipes = await getAllRecipesByTag(tag);
     response.status(200).json(recipes);
 }));
 
@@ -39,20 +39,20 @@ router.get('/bytags/:tags', tryCatch(async (request, response) => {
 
 router.get('/byuser/:userId', tryCatch(async (request, response) => {
     const userId = request.params.userId;
-    const recipes = await recipesLogic.getAllRecipesByUserId(userId);
+    const recipes = await getAllRecipesByUserId(userId);
     response.status(200).json(recipes);
 }));
 
 router.put('/:recipeId', tryCatch(async (request, response) => {
     let recipe = request.body;
     recipe.id = request.params.recipeId;
-    await recipesLogic.updateRecipe(recipe);
+    await updateRecipe(recipe);
     response.status(200).json({ message: 'Recipe updated successfully' });
 }));
 
 router.delete('/:recipeId', tryCatch(async (request, response) => {
     const recipeId = request.params.recipeId;
-    await recipesLogic.deleteRecipe(recipeId);
+    await deleteRecipe(recipeId);
     response.status(200).json({ message: 'Recipe deleted successfully' });
 }));
 
