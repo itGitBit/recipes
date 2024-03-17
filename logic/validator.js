@@ -10,7 +10,7 @@ const signupSchema = Joi.object({
     password: Joi.string().min(6).max(30).required(),
     email: Joi.string().email().required(),
     type: Joi.string().valid('admin', 'user').required(),
-    profileImage: Joi.string().max(400),
+    profilePicture: Joi.string().max(400),
     active: Joi.boolean().valid(true)
 
 });

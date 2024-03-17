@@ -9,27 +9,33 @@ import jwt from 'jsonwebtoken';
 
 const login = async (userLoginDetails) => {
     const { error, value } = validateLogin(userLoginDetails);
+    console.log(value.email, value.password);
     if (error) { throw new AppError(errorType.VALIDATION_ERROR, error.message, 400, error.code, true); }
-    const user = await getUserByEmail(userLoginDetails.email);
+    const user = await getUserByEmail(value.email);
     if (!user) {
         throw new AppError(errorType.NO_USERS_FOUND, "user not found", 404, "user not found", true);
     }
-    const isPasswordMatch = await bcrypt.compare(userLoginDetails.password, user.password);
+    const isPasswordMatch = await bcrypt.compare(value.password, user.password);
     if (!isPasswordMatch) {
-        throw new AppError(errorType.VALIDATION_ERROR, "invalid password", 400, "invalid password", true);
+        console.log("invalid password");
+        throw new AppError(errorType.VALIDATION_ERROR, "invalid password", 401, "invalid password", true);
     }
-    const accessToken = jwt.sign({ username: user.username, type: user.type, id: user.id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+    const accessToken = jwt.sign({ username: user.username, type: user.type, id: user.id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
     const refreshToken = jwt.sign({ username: user.username, type: user.type, id: user.id }, process.env.REFRESH_TOKEN_SECRET);
     return { accessToken, refreshToken };
 }
 
 
 const register = async (user) => {
+    if(!user.type){
+        user.type='user';
+    }
     const { error, value } = validateSignup(user);
     if (error) { throw new AppError(errorType.VALIDATION_ERROR, error.message, 400, error.code, true); }
     await isUserExist(user.email);
     const hashedPassword = await bcrypt.hash(user.password, 10);
     user.password = hashedPassword;
+    user.active = 1;
     await addUser(user);
 };
 

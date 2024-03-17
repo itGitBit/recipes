@@ -5,8 +5,8 @@ import calculateCurrentTime from '../utils/calculate-time.js';
 
 
 const addUser = async (user) => {
-    let sql = " INSERT INTO users (username, password, email, type, profile_picture, active) VALUES (?, ?, ?, ?,?)"
-    let parameters = [user.username, user.password, user.email, user.type];
+    let sql = " INSERT INTO users (username, password, email, type, profile_picture, active) VALUES (?, ?, ?, ?,?,?)"
+    let parameters = [user.username, user.password, user.email,user.type, user.profilePicture, user.active];
     try {
         await executeWithParameters(sql, parameters);
     } catch (error) {
@@ -40,8 +40,7 @@ const getUser = async (userId) => {
         console.log(error.message);
         throw new AppError(ErrorTypes.DB_ERROR, `${calculateCurrentTime()} ${error.message}`, 500, false);
     }
-    return user;
-
+    return user[0];
 }
 
 const getAllUsers = async () => {
@@ -82,24 +81,23 @@ const isUserExist = async (email) => {
 }
 
 
-const getUserByEmail = async (email, password) => {
+const getUserByEmail = async (email) => {
     const sql = "SELECT id, username, password, email, type, profile_picture FROM users WHERE email = ?";
     let parameters = [email];
     try {
         let users = await executeWithParameters(sql, parameters);
         let user = users[0];
         if (!user) {
-            throw new AppError("user not found");
+            throw new AppError(ErrorTypes.INVALID_USER,"user not found", 404, false);
         }
+        return user;
     } catch (error) {
+
         if (error instanceof AppError) {
             throw error;
         }
-        console.log(error.message);
         throw new AppError(ErrorTypes.DB_ERROR, "Failed to get user from database", 500, false);
     }
-
-    return user;
 }
 
 const deleteUser = async (userId) => {

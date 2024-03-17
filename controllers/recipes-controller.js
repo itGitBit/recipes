@@ -1,6 +1,6 @@
 import express from 'express';
 const router = express.Router();
-import { addRecipe, getAllRecipes, updateRecipe, deleteRecipe, getRecipe, getAllRecipesByIngredientId, getAllRecipesByTag, getAllRecipesByUserId } from '../logic/recipes-logic.js';
+import { addRecipe, getAllRecipes, updateRecipe, getAllRecipesByIngredients, deleteRecipe, getRecipe, getAllRecipesByIngredientId, getAllRecipesByTag, getAllRecipesByUserId } from '../logic/recipes-logic.js';
 import { tryCatch } from '../utils/trycatch.js';
 
 router.post('/', tryCatch(async (request, response) => {
@@ -10,6 +10,12 @@ router.post('/', tryCatch(async (request, response) => {
     await addRecipe(recipe, ingredients, tags);
 
     response.status(201).json({ message: 'Recipe added successfully' });
+}));
+
+router.post('/getbyingredients', tryCatch(async (request, response) => {
+    let ingredients = request.body.ingredients;
+    let recipes = await getAllRecipesByIngredients(ingredients);
+    response.status(200).json(recipes);
 }));
 
 router.get('/', tryCatch(async (request, response) => {

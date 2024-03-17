@@ -5,7 +5,9 @@ import { tryCatch } from '../utils/trycatch.js';
 
 
 router.post('/', tryCatch(async (request, response) => {
+
     let user = request.body;
+    console.log(JSON.stringify(user));
     await register(user);
     response.status(201).json({ message: 'User registered successfully' });
 
@@ -15,8 +17,8 @@ router.post('/', tryCatch(async (request, response) => {
 
 router.post('/login', tryCatch(async (request, response) => {
     let userLoginDetails = request.body;
-    let { authToken, refreshToken } = await usersLogic.login(userLoginDetails);
-    response.status(200).json({ accessToken: authToken, refreshToken: refreshToken });
+    let { accessToken, refreshToken } = await login(userLoginDetails);
+    response.status(200).json({ accessToken: accessToken, refreshToken: refreshToken });
 }));
 
 // router.post('/token', tryCatch(async (request, response) => {

@@ -1,7 +1,7 @@
 import {
     addRecipe as addRecipeDal, linkRecipeWithIngredients, linkRecipeWithTags,
     deleteIngredientsRecipesTableColumn, deleteTagsRecipesTableColumn, updateLikeCounter as updateLikeCounterDal, getRecipe as getRecipeDal, getAllRecipes as getAllRecipesDal,
-    getAllRecipesByIngredientId as getAllRecipesByIngredientIdDal, getAllRecipesByTagDal, getAllRecipesByUserIdDal, updateRecipeDal
+    getAllRecipesByIngredientId as getAllRecipesByIngredientIdDal, getAllRecipesByTagDal, getAllRecipesByUserIdDal, updateRecipeDal, getAllRecipesIngredientByIngredientIds
 } from '../dal/recipes-dal.js';
 import { validateRecipe } from './validator.js';
 import AppError from '../error/AppError.js';
@@ -196,6 +196,38 @@ const getAllRecipesByUserId = async (userId) => {
     return extendedRecipes;
 }
 
+const getAllRecipesByIngredients = async (ingredients) => {
+    const unusedIngredient = ingredients.shift();
+    if (!ingredients || !Array.isArray(ingredients) || ingredients.length === 0) {
+        throw new AppError(errorType.NO_RECIPES_FOUND, "No ingredients provided", 400, true);
+    }
+    const ingredientIds = ingredients.map(ingredient => ingredient.id);
+    const recipesPromises = ingredientIds.map(async (ingredientId) => {
+        return await getAllRecipesIngredientByIngredientIds(ingredientId);
+    });
+    const recipes = await Promise.all(recipesPromises);
+    if (!recipes || recipes.length === 0) {
+        throw new AppError(errorType.NO_RECIPES_FOUND, "Recipes not found", 404, true);
+    }
+    const recipeSet = new Set();
+    let lengthCounter = 0;
+    let recipesToReturn = [];
+    for (let recipe of recipes) {
+        if (recipe.length > lengthCounter) {
+            lengthCounter = recipe.length;
+            recipesToReturn.unshift(recipe);
+
+        }else{
+            recipesToReturn.push(recipe);
+        }
+    }
+    console.log(recipesToReturn);
+    return recipesToReturn;
+};
+
+
+
+
 export {
     addRecipe,
     getAllRecipes,
@@ -206,5 +238,6 @@ export {
     getAllRecipesByIngredientId,
     getAllRecipesByTag,
     getAllRecipesByUserId,
-    updateRecipe
+    updateRecipe,
+    getAllRecipesByIngredients
 };

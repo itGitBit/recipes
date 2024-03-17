@@ -83,6 +83,19 @@ const updateLikeCounter = async (recipeId, amountToUpdate) => {
     }
 }
 
+const getAllRecipesIngredientByIngredientIds = async (ingredientIds) => {
+    let sql = `SELECT recipe_id as recipeId, ingredient_id as ingredientId FROM recipe_ingredients WHERE ingredient_id IN (?)`;
+    let parameters = [ingredientIds];
+    try {
+        let recipes = await executeWithParameters(sql, parameters);
+        return recipes;
+    } catch (error) {
+        console.log(`${calculateCurrentTime()} - recipesDal.getAllRecipesIngredientByIngredientIds ${error.message}`);
+        throw new AppError(ErrorTypes.DB_ERROR, "Failed to get all recipes from database", 500, false);
+    }
+}
+
+
 // const checkIfRecipeExists = async (recipeId) => {
 //     let sql = "select id from recipes where name = ?";
 //     let parameters = [recipeId];
@@ -238,5 +251,6 @@ export {
     getAllRecipesByIngredientId,
     getAllRecipesByTagDal,
     getAllRecipesByUserIdDal,
-    updateRecipeDal
+    updateRecipeDal,
+    getAllRecipesIngredientByIngredientIds
 };
