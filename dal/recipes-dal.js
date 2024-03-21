@@ -83,17 +83,32 @@ const updateLikeCounter = async (recipeId, amountToUpdate) => {
     }
 }
 
-const getAllRecipesIngredientByIngredientIds = async (ingredientIds) => {
-    let sql = `SELECT recipe_id as recipeId, ingredient_id as ingredientId FROM recipe_ingredients WHERE ingredient_id IN (?)`;
-    let parameters = [ingredientIds];
+const getAllRecipesIngredientByIngredientIds = async (ingredients) => {
+    if (!ingredients || !Array.isArray(ingredients) || ingredients.length === 0) {
+        throw new AppError(ErrorTypes.NO_RECIPES_FOUND, "No ingredients provided", 400, true);
+    }
+    const ingredientIds = ingredients.map(ingredient => ingredient.id);
+    let placeholders = ingredientIds.map(() => '?').join(', ');
+    let sql = `
+        SELECT recipe_id as recipeId, COUNT(ingredient_id) as matchingIngredientsCount
+        FROM recipe_ingredients
+        WHERE ingredient_id IN (${placeholders})
+        GROUP BY recipe_id
+        ORDER BY COUNT(ingredient_id) DESC
+    `;
+    let parameters = ingredientIds;
     try {
         let recipes = await executeWithParameters(sql, parameters);
+        if (!recipes || recipes.length === 0) {
+            throw new AppError(ErrorTypes.NO_RECIPES_FOUND, "Recipes not found", 404, true);
+        }
         return recipes;
     } catch (error) {
         console.log(`${calculateCurrentTime()} - recipesDal.getAllRecipesIngredientByIngredientIds ${error.message}`);
         throw new AppError(ErrorTypes.DB_ERROR, "Failed to get all recipes from database", 500, false);
     }
-}
+};
+
 
 
 // const checkIfRecipeExists = async (recipeId) => {
@@ -114,10 +129,11 @@ const getAllRecipesIngredientByIngredientIds = async (ingredientIds) => {
 // }
 
 const getRecipe = async (recipeId) => {
-    let sql = `SELECT id, title, description, image, steps, user_id, likes_amount FROM recipes WHERE id = ?`;
+    let sql = `SELECT id, title, description, image, steps, user_id as userId, likes_amount as likesAmount FROM recipes WHERE id = ?`;
     let parameters = [recipeId];
     try {
-        let recipe = await executeWithParameters(sql, parameters);
+        let recipes = await executeWithParameters(sql, parameters);
+        const recipe = recipes[0];
         return recipe;
     } catch (error) {
         console.log(`${calculateCurrentTime()} - recipesDal.getRecipe ${error.message}`);

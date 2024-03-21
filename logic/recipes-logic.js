@@ -81,7 +81,7 @@ const deleteRecipe = async (recipeId) => {
         await deleteRecipe(recipeId, connection);
         await deleteLikesByRecipeIdWithConnection(recipeId, connection);
         await commitTransaction(connection);
-        console.log('Recipe and its components were deleted successfully.');
+
     }
     catch (error) {
         if (connection) await rollbackTransaction(connection);
@@ -130,14 +130,14 @@ const getAllRecipes = async () => {
 };
 
 const getRecipe = async (recipeId) => {
-
     const recipe = await getRecipeDal(recipeId);
     if (!recipe) {
         throw new AppError(errorType.NO_RECIPES_FOUND, "recipe not found", 404, true);
     }
+    const updatedRecipeLikesAmount = await updateLikeCounter(recipe.id);
     const tags = await getTagsByRecipeId(recipeId);
     const ingredients = await getIngredientsByRecipeId(recipeId);
-    return { recipe, tags, ingredients };
+    return { ...recipe, likesAmount: updatedRecipeLikesAmount, tags, ingredients };
 };
 
 const getAllRecipesByIngredientId = async (ingredientId) => {
@@ -146,7 +146,7 @@ const getAllRecipesByIngredientId = async (ingredientId) => {
         throw new AppError(errorType.NO_RECIPES_FOUND, "recipes not found", 404, true)
     }
     const extendedRecipes = await Promise.all(recipes.map(async (recipe) => {
-        const updatedRecipeLikesAmount = await updateLikeCounterDal(recipe.id);
+        const updatedRecipeLikesAmount = await updateLikeCounter(recipe.id);
         const tags = await getTagsByRecipeId(recipe.id);
         const ingredients = await getIngredientsByRecipeId(recipe.id);
         return {
@@ -158,13 +158,13 @@ const getAllRecipesByIngredientId = async (ingredientId) => {
     }))
     return extendedRecipes;
 }
-const getAllRecipesByTag = async (tag) => {
-    const recipes = await getAllRecipesByTagDal(tag.name);
+const getAllRecipesByTag = async (tagName) => {
+    const recipes = await getAllRecipesByTagDal(tagName);
     if (!recipes) {
         throw new AppError(errorType.NO_RECIPES_FOUND, "recipes not found", 404, true)
     }
     const extendedRecipes = await Promise.all(recipes.map(async (recipe) => {
-        const updatedRecipeLikesAmount = await updateLikeCounterDal(recipe.id);
+        const updatedRecipeLikesAmount = await updateLikeCounter(recipe.id);
         const tags = await getTagsByRecipeId(recipe.id);
         const ingredients = await getIngredientsByRecipeId(recipe.id);
         return {
@@ -183,7 +183,7 @@ const getAllRecipesByUserId = async (userId) => {
         throw new AppError(errorType.NO_RECIPES_FOUND, "recipes not found", 404, true)
     }
     const extendedRecipes = await Promise.all(recipes.map(async (recipe) => {
-        const updatedRecipeLikesAmount = await updateLikeCounterDal(recipe.id);
+        const updatedRecipeLikesAmount = await updateLikeCounter(recipe.id);
         const tags = await getTagsByRecipeId(recipe.id);
         const ingredients = await getIngredientsByRecipeId(recipe.id);
         return {
@@ -201,29 +201,35 @@ const getAllRecipesByIngredients = async (ingredients) => {
     if (!ingredients || !Array.isArray(ingredients) || ingredients.length === 0) {
         throw new AppError(errorType.NO_RECIPES_FOUND, "No ingredients provided", 400, true);
     }
-    const ingredientIds = ingredients.map(ingredient => ingredient.id);
-    const recipesPromises = ingredientIds.map(async (ingredientId) => {
-        return await getAllRecipesIngredientByIngredientIds(ingredientId);
-    });
-    const recipes = await Promise.all(recipesPromises);
-    if (!recipes || recipes.length === 0) {
-        throw new AppError(errorType.NO_RECIPES_FOUND, "Recipes not found", 404, true);
-    }
-    const recipeSet = new Set();
-    let lengthCounter = 0;
-    let recipesToReturn = [];
-    for (let recipe of recipes) {
-        if (recipe.length > lengthCounter) {
-            lengthCounter = recipe.length;
-            recipesToReturn.unshift(recipe);
-
-        }else{
-            recipesToReturn.push(recipe);
+    try {
+        const recipes = await getAllRecipesIngredientByIngredientIds(ingredients);
+        if (!recipes || recipes.length === 0) {
+            throw new AppError(errorType.NO_RECIPES_FOUND, "Recipes not found", 404, true);
         }
+        const fullRecipes = await getRecipes(recipes);
+        return fullRecipes;
     }
-    console.log(recipesToReturn);
-    return recipesToReturn;
+    catch (error) {
+        console.error(`Failed to get recipes by ingredients: ${calculateCurrentTime()} ${error.message}`);
+        throw new AppError(errorType.DB_ERROR, "Failed to get recipes by ingredients", 500, false);
+    }
+
 };
+
+
+const getRecipes = async (recipes) => {
+    try {
+        const detailedRecipes = await Promise.all(
+            recipes.map(recipe => getRecipe(recipe.recipeId))
+        );
+        detailedRecipes.flat();
+        return detailedRecipes;
+    } catch (error) {
+        console.log('Error fetching recipe details:', error);
+        throw error; // or handle the error as needed
+    }
+};
+
 
 
 

@@ -35,9 +35,9 @@ router.get('/byingredient/:ingredientId', tryCatch(async (request, response) => 
     response.status(200).json(recipes);
 }));
 
-router.get('/bytag/:tag', tryCatch(async (request, response) => {
-    const tag = request.params.tag;
-    const recipes = await getAllRecipesByTag(tag);
+router.get('/bytag/:tagName', tryCatch(async (request, response) => {
+    const tagName = request.params.tagName;
+    const recipes = await getAllRecipesByTag(tagName);
     response.status(200).json(recipes);
 }));
 

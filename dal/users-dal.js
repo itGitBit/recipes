@@ -20,7 +20,7 @@ const addUser = async (user) => {
 
 
 const getUser = async (userId) => {
-    let sql = "select username, profile_picture as profilePicture from users where id=?"
+    let sql = "select username, profile_picture as profilePicture, email from users where id=?"
     let parameters = [userId];
     let user;
     try {
@@ -111,10 +111,13 @@ const deleteUser = async (userId) => {
     }
 }
 const updateUser = async (user) => {
-    let sql = 'update users set username=?, password=?, email=?, type=?, profile_picture=? where id=?';
-    let parameters = [user.username, user.password, user.email, user.type, user.profilePicture, user.id];
+    let sql = 'update users set username=?, email=?, profile_picture=? where id=?';
+    let parameters = [user.username,  user.email, user.profilePicture, user.id];
     try {
-        await executeWithParameters(sql, parameters);
+        const updateDetails =  await executeWithParameters(sql, parameters);
+        const newUser = await getUser(user.id);
+        return newUser;
+        console.log("user updated successfully" + JSON.stringify(newUser));
     } catch (error) {
         console.log(`${calculateCurrentTime()} - usersDal.updateUser - ${error.message}`)
         throw new AppError(ErrorTypes.DB_ERROR, "failed to update user", 500, false)

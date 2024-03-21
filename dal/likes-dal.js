@@ -42,7 +42,7 @@ const getAllLikesByRecipeId = async (recipeId) => {
 }
 
 const getAllLikesByUserId = async (userId) => {
-    let sql = "select user_id, recipe_id from likes where user_id = ?";
+    let sql = "select user_id as userId, recipe_id recipeId from likes where user_id = ?";
     let parameters = [userId];
     try {
         let likes = await executeWithParameters(sql, parameters);

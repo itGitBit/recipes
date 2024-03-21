@@ -7,7 +7,6 @@ import { tryCatch } from '../utils/trycatch.js';
 router.post('/', tryCatch(async (request, response) => {
 
     let user = request.body;
-    console.log(JSON.stringify(user));
     await register(user);
     response.status(201).json({ message: 'User registered successfully' });
 
@@ -43,12 +42,11 @@ router.get('/', tryCatch(async (request, response) => {
 }));
 
 
-router.put('/:userId', tryCatch(async (request, response) => {
-    const userId = request.params.userId;
+router.put('/', tryCatch(async (request, response) => {
     const user = request.body;
-    user.id = userId;
-    await updateUser(user);
-    response.status(200).json({ message: 'User updated successfully' });
+
+    const newUser = await updateUser(user);
+    response.status(200).json({username: newUser.username, email: newUser.email, profilePicture: newUser.profilePicture, id: newUser.id});
 }
 ));
 router.delete('/:userId', tryCatch(async (request, response) => {

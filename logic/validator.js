@@ -61,6 +61,13 @@ const tagsSchema = Joi.object({
     name: Joi.string().min(3).max(30).regex(/^[A-Za-z\s]+$/).required()
 });
 
+const userSchema = Joi.object({
+        id: Joi.number().required(),
+        username: Joi.string().min(3).max(30).required(),
+        email: Joi.string().email().required(),
+        profilePicture: Joi.string().max(400)
+    });
+
 
 const validateLogin = validator(loginSchema);
 const validateSignup = validator(signupSchema);
@@ -69,6 +76,7 @@ const validateComments = validator(commentsSchema);
 const validateLikes = validator(likesSchema);
 const validateRecipe = validator(recipeSchema);
 const validateTags = validator(tagsSchema);
+const validateUserUpdate = validator(userSchema);
 
 
 
@@ -79,5 +87,6 @@ export {
     validateComments,
     validateLikes,
     validateRecipe,
-    validateTags
+    validateTags,
+    validateUserUpdate
 };

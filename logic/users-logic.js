@@ -1,6 +1,6 @@
 import { config } from 'dotenv';
 config();
-import { validateLogin, validateSignup } from './validator.js';
+import { validateLogin, validateSignup, validateUserUpdate } from './validator.js';
 import { getUserByEmail, isUserExist, addUser, deleteUser as deleteUserDal, updateUser as updateUserDal, getUser as getUserDal, getAllUsers as getAllUsersDal } from "../dal/users-dal.js";
 import bcrypt from "bcrypt";
 import AppError from "../error/AppError.js";
@@ -9,7 +9,6 @@ import jwt from 'jsonwebtoken';
 
 const login = async (userLoginDetails) => {
     const { error, value } = validateLogin(userLoginDetails);
-    console.log(value.email, value.password);
     if (error) { throw new AppError(errorType.VALIDATION_ERROR, error.message, 400, error.code, true); }
     const user = await getUserByEmail(value.email);
     if (!user) {
@@ -27,8 +26,8 @@ const login = async (userLoginDetails) => {
 
 
 const register = async (user) => {
-    if(!user.type){
-        user.type='user';
+    if (!user.type) {
+        user.type = 'user';
     }
     const { error, value } = validateSignup(user);
     if (error) { throw new AppError(errorType.VALIDATION_ERROR, error.message, 400, error.code, true); }
@@ -53,9 +52,10 @@ const deleteUser = async (userId) => {
 };
 
 const updateUser = async (user) => {
-    const { error, value } = validateSignup(user);
+    const { error, value } = validateUserUpdate(user);
     if (error) { throw new AppError(errorType.VALIDATION_ERROR, error.message, 400, error.code, true); }
-    await updateUserDal(user);
+    const newUser = await updateUserDal(value);
+    return newUser;
 };
 
 
